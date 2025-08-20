@@ -1,0 +1,64 @@
+###simulação/post
+
+###nova simulacao do Produto 1
+POST http://localhost:8080/api/simulacoes
+Content-Type: application/json
+
+{
+  "valorDesejado": 9000.00,
+  "prazo": 20
+}
+
+###nova simulacao Produto 2
+POST http://localhost:8080/api/simulacoes
+Content-Type: application/json
+
+{
+  "valorDesejado": 50000.00,
+  "prazo": 36
+}
+
+###nova simulacao Produto 3
+POST http://localhost:8080/api/simulacoes
+Content-Type: application/json
+
+{
+  "valorDesejado": 150000.00,
+  "prazo": 60
+}
+
+###nova simulacao Produto 4
+POST http://localhost:8080/api/simulacoes
+Content-Type: application/json
+
+{
+  "valorDesejado": 1200000.00,
+  "prazo": 120
+}
+
+###simulacao com parametros invalidos (nao encontra produto)
+POST http://localhost:8080/api/simulacoes
+Content-Type: application/json
+
+{
+  "valorDesejado": 100.00,
+  "prazo": 5
+}
+
+###consulta/get
+
+###listar todas as simulacoes realizadas
+GET http://localhost:8080/api/simulacoes?page=0&size=10
+Accept: application/json
+
+
+###relatorio de volume diario
+#para data dif substituir a data pela data atual no formato yyyy-mm-dd
+GET http://localhost:8080/api/simulacoes/relatorios/volume-diario?data=2025-08-20
+Accept: application/json
+
+
+###dados de telemetria
+#necessario executar algumas das requisicoes acima antes de chamar esta para ter dados para mensurar
+GET http://localhost:8080/api/telemetria
+Accept: application/json
