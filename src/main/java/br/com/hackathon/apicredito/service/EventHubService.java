@@ -1,40 +1,36 @@
 package br.com.hackathon.apicredito.service;
 
 import com.azure.messaging.eventhubs.EventData;
-import com.azure.messaging.eventhubs.EventDataBatch;
-import com.azure.messaging.eventhubs.EventHubProducerClient;
-import lombok.RequiredArgsConstructor;
+import com.azure.messaging.eventhubs.EventHubClientBuilder;
+import com.azure.messaging.eventhubs.EventHubProducerAsyncClient;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import java.util.Collections;
+import java.util.function.Consumer;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class EventHubService {
 
-    private final EventHubProducerClient producerClient;
+    private final EventHubProducerAsyncClient producerAsyncClient;
 
-    public void enviarSimulacao(String simulacaoJson) {
-        EventDataBatch eventDataBatch = producerClient.createBatch();
+    public EventHubService(@Value("${spring.cloud.azure.eventhubs.connection-string}") String connectionString) {
+        this.producerAsyncClient = new EventHubClientBuilder()
+                .connectionString(connectionString)
+                .buildAsyncProducerClient();
+    }
+
+    public void enviarSimulacao(String simulacaoJson, Runnable onSuccess, Consumer<Throwable> onError) {
         EventData eventData = new EventData(simulacaoJson);
 
-        if (!eventDataBatch.tryAdd(eventData)) {
-            producerClient.send(eventDataBatch);
-            eventDataBatch = producerClient.createBatch();
+        log.info("[EventHub] Agendando envio assíncrono.");
 
-            if (!eventDataBatch.tryAdd(eventData)) {
-                log.error("Evento de simulação é muito grande para um lote vazio. Tamanho: {} bytes.", eventData.getBodyAsBinaryData().getLength());
-                return;
-            }
-        }
-
-        if (eventDataBatch.getCount() > 0) {
-            try {
-                producerClient.send(eventDataBatch);
-                log.info("Evento de simulação enviado com sucesso para o Event Hub.");
-            } catch (Exception e) {
-                log.error("Erro ao enviar evento para o Event Hub", e);
-            }
-        }
+        producerAsyncClient.send(Collections.singletonList(eventData)).subscribe(
+                null,
+                onError,
+                onSuccess
+        );
     }
 }

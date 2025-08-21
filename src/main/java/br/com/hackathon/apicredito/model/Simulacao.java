@@ -30,4 +30,8 @@ public class Simulacao {
 
     @Column(name = "DT_SIMULACAO", nullable = false)
     private LocalDateTime dataSimulacao;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "ST_ENVIO_EVENTHUB", nullable = false)
+    private StatusEnvioEventHub statusEnvioEventHub;
 }
