@@ -2,6 +2,7 @@ package br.com.hackathon.apicredito.service;
 
 import br.com.hackathon.apicredito.dto.SimulacaoProdutoDTO;
 import br.com.hackathon.apicredito.dto.VolumeDiarioDTO;
+import br.com.hackathon.apicredito.model.Produto; // <-- Importar a entidade Produto
 import br.com.hackathon.apicredito.model.Simulacao;
 import br.com.hackathon.apicredito.repository.SimulacaoRepository;
 import lombok.RequiredArgsConstructor;
@@ -26,20 +27,24 @@ public class RelatorioService {
                 data.atTime(LocalTime.MAX)
         );
 
-        Map<Integer, List<Simulacao>> simulacoesPorProduto = simulacoesDoDia.stream()
-                .collect(Collectors.groupingBy(Simulacao::getCodigoProduto));
+        Map<Produto, List<Simulacao>> simulacoesPorProduto = simulacoesDoDia.stream()
+                .collect(Collectors.groupingBy(Simulacao::getProduto));
 
         List<SimulacaoProdutoDTO> dtos = simulacoesPorProduto.entrySet().stream()
                 .map(entry -> {
-                    Integer codigoProduto = entry.getKey();
+                    Produto produto = entry.getKey();
                     List<Simulacao> simulacoes = entry.getValue();
-                    String descProduto = simulacoes.get(0).getDescricaoProduto();
 
                     BigDecimal valorTotalDesejado = simulacoes.stream()
                             .map(Simulacao::getValorDesejado)
                             .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-                    return new SimulacaoProdutoDTO(codigoProduto, descProduto, valorTotalDesejado, simulacoes.size());
+                    return new SimulacaoProdutoDTO(
+                            produto.getCodigo(),
+                            produto.getNome(),
+                            valorTotalDesejado,
+                            simulacoes.size()
+                    );
                 })
                 .collect(Collectors.toList());
 

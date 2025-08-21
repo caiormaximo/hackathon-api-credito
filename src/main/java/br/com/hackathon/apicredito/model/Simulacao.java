@@ -12,25 +12,22 @@ import java.util.UUID;
 public class Simulacao {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(name = "DT_SIMULACAO", nullable = false)
-    private LocalDateTime dataSimulacao;
-
-    @Column(name = "CD_PRODUTO", nullable = false)
-    private Integer codigoProduto;
-
-    @Column(name = "DS_PRODUTO", nullable = false)
-    private String descricaoProduto;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "CO_PRODUTO", nullable = false)
+    private Produto produto;
 
     @Column(name = "VR_DESEJADO", nullable = false, precision = 18, scale = 2)
     private BigDecimal valorDesejado;
 
     @Column(name = "QT_PRAZO", nullable = false)
-    private int prazo;
+    private Integer prazo;
 
-    @Lob //armazenar json completo
+    @Lob
     @Column(name = "DS_RESULTADO_JSON", nullable = false)
     private String resultadoJson;
+
+    @Column(name = "DT_SIMULACAO", nullable = false)
+    private LocalDateTime dataSimulacao;
 }

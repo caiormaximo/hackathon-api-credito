@@ -1,18 +1,16 @@
 package br.com.hackathon.apicredito.controller;
 
-import br.com.hackathon.apicredito.dto.SimulacaoListagemDTO;
-import br.com.hackathon.apicredito.dto.SimulacaoRequestDTO;
-import br.com.hackathon.apicredito.dto.SimulacaoResponseDTO;
+import br.com.hackathon.apicredito.dto.*;
 import br.com.hackathon.apicredito.dto.VolumeDiarioDTO;
 import br.com.hackathon.apicredito.service.RelatorioService;
 import br.com.hackathon.apicredito.service.SimulacaoService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.time.LocalDate;
 
 @RestController
@@ -24,18 +22,33 @@ public class SimulacaoController {
     private final RelatorioService relatorioService;
 
     @PostMapping
-    public ResponseEntity<SimulacaoResponseDTO> simular(@RequestBody @Valid SimulacaoRequestDTO requestDTO) {
+    public ResponseEntity<SimulacaoResponseDTO> simular(@Valid @RequestBody SimulacaoRequestDTO requestDTO) {
         SimulacaoResponseDTO response = simulacaoService.criarSimulacao(requestDTO);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.created(URI.create("/simulacoes/" + response.idSimulacao())).body(response);
     }
 
     @GetMapping
-    public ResponseEntity<Page<SimulacaoListagemDTO>> listar(Pageable pageable) {
-        return ResponseEntity.ok(simulacaoService.listarTodas(pageable));
+    public ResponseEntity<ListaSimulacoesResponseDTO> listarSimulacoes(
+            @RequestParam(defaultValue = "1") int pagina,
+            @RequestParam(defaultValue = "10") int qtdRegistrosPagina) {
+
+        ListaSimulacoesResponseDTO response = simulacaoService.listarSimulacoes(pagina, qtdRegistrosPagina);
+        return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/relatorios/volume-diario")
-    public ResponseEntity<VolumeDiarioDTO> obterVolumeDiario(@RequestParam("data") LocalDate data) {
-        return ResponseEntity.ok(relatorioService.gerarVolumeDiario(data));
+    @GetMapping("/volume-diario")
+    public ResponseEntity<VolumeDiarioDTO> volumeSimuladoPorProdutoPorDia(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate data) {
+
+        VolumeDiarioDTO response = relatorioService.gerarVolumeDiario(data);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/telemetria")
+    public ResponseEntity<TelemetriaResponseDTO> obterTelemetria(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate data) {
+
+        TelemetriaResponseDTO response = simulacaoService.obterDadosTelemetria(data);
+        return ResponseEntity.ok(response);
     }
 }

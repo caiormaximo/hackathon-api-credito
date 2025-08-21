@@ -50,9 +50,9 @@ public class DataInitializer implements CommandLineRunner {
             p4.setNome("Produto 4");
             p4.setTaxaJuros(new BigDecimal("0.015100000"));
             p4.setMinimoMeses(96);
-            p4.setMaximoMeses(null); // Sem máximo de meses
+            p4.setMaximoMeses(null); //sem maximo de meses
             p4.setValorMinimo(new BigDecimal("1000000.01"));
-            p4.setValorMaximo(null); // Sem máximo de valor
+            p4.setValorMaximo(null); //sem maximo de valor
 
             produtoRepository.saveAll(Arrays.asList(p1, p2, p3, p4));
         }

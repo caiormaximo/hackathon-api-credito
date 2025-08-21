@@ -1,11 +1,12 @@
 package br.com.hackathon.apicredito.dto;
 
+//DTO para as metricas de telemetria
+
 public record EndpointTelemetriaDTO(
         String nomeApi,
-        String metodo,
-        String uri,
-        long qtdRequisicoes,
-        double tempoMedio, // em milissegundos
-        double tempoMinimo,
-        double tempoMaximo
+        Long qtdRequisicoes,
+        Long tempoMedio, //miliseg
+        Long tempoMinimo,
+        Long tempoMaximo,
+        Double percentualSucesso //200
 ) {}
