@@ -1,5 +1,6 @@
 package br.com.hackathon.apicredito.model;
 
+import br.com.hackathon.apicredito.dto.StatusFraude;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.math.BigDecimal;
@@ -34,4 +35,11 @@ public class Simulacao {
     @Enumerated(EnumType.STRING)
     @Column(name = "ST_ENVIO_EVENTHUB", nullable = false)
     private StatusEnvioEventHub statusEnvioEventHub;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "ST_ANALISE_FRAUDE")
+    private StatusFraude statusAnaliseFraude;
+
+    @Column(name = "PC_PONTUACAO_FRAUDE")
+    private Double pontuacaoFraude;
 }

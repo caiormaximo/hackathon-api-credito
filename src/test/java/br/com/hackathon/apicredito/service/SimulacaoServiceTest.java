@@ -1,13 +1,12 @@
 package br.com.hackathon.apicredito.service;
 
-import br.com.hackathon.apicredito.dto.ParcelaDTO;
-import br.com.hackathon.apicredito.dto.SimulacaoRequestDTO;
-import br.com.hackathon.apicredito.dto.SimulacaoResponseDTO;
+import br.com.hackathon.apicredito.dto.*;
 import br.com.hackathon.apicredito.exception.ProdutoNaoEncontradoException;
 import br.com.hackathon.apicredito.model.Produto;
 import br.com.hackathon.apicredito.model.Simulacao;
 import br.com.hackathon.apicredito.repository.ProdutoRepository;
 import br.com.hackathon.apicredito.repository.SimulacaoRepository;
+import br.com.hackathon.apicredito.service.fraude.AnaliseFraudeService; // <-- Importar novo serviço
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.BeforeEach;
@@ -40,6 +39,9 @@ class SimulacaoServiceTest {
     @Mock
     private TelemetriaService telemetriaService;
 
+    @Mock // <-- NOVO MOCK ADICIONADO
+    private AnaliseFraudeService analiseFraudeService;
+
     private SimulacaoService simulacaoService;
 
     @BeforeEach
@@ -53,23 +55,25 @@ class SimulacaoServiceTest {
                 calculoAmortizacaoService,
                 eventHubService,
                 telemetriaService,
-                realObjectMapper
+                realObjectMapper,
+                analiseFraudeService
         );
     }
 
     @Test
     @DisplayName("Deve criar simulação com sucesso quando um produto válido for encontrado")
     void criarSimulacao_deveRetornarSucesso_quandoProdutoValidoEncontrado() {
-        // Arrange
         SimulacaoRequestDTO request = new SimulacaoRequestDTO(new BigDecimal("5000.00"), 12);
         Produto produtoValido = criarProdutoMock();
         List<ParcelaDTO> parcelasMock = List.of(new ParcelaDTO(1, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO));
+
+        var respostaFraudeAprovada = new AnaliseFraudeResponseDTO(StatusFraude.APROVADO, "OK", 0.1);
+        when(analiseFraudeService.verificarFraude(any(AnaliseFraudeRequestDTO.class))).thenReturn(respostaFraudeAprovada);
 
         when(produtoRepository.findProdutoElegivel(request.valorDesejado(), request.prazo())).thenReturn(Optional.of(produtoValido));
         when(calculoAmortizacaoService.calcularSac(any(), anyInt(), any())).thenReturn(parcelasMock);
         when(calculoAmortizacaoService.calcularPrice(any(), anyInt(), any())).thenReturn(parcelasMock);
         when(simulacaoRepository.save(any(Simulacao.class))).thenReturn(new Simulacao());
-
         doNothing().when(eventHubService).enviarSimulacao(anyString(), any(Runnable.class), any(Consumer.class));
 
         SimulacaoResponseDTO response = simulacaoService.criarSimulacao(request);
@@ -77,6 +81,7 @@ class SimulacaoServiceTest {
         assertNotNull(response);
         assertEquals(produtoValido.getCodigo(), response.codigoProduto());
 
+        verify(analiseFraudeService, times(1)).verificarFraude(any(AnaliseFraudeRequestDTO.class));
         verify(eventHubService, times(1)).enviarSimulacao(anyString(), any(Runnable.class), any(Consumer.class));
     }
 
@@ -84,6 +89,10 @@ class SimulacaoServiceTest {
     @DisplayName("Deve lançar ProdutoNaoEncontradoException quando nenhum produto for aplicável")
     void criarSimulacao_deveLancarExcecao_quandoNenhumProdutoEncontrado() {
         SimulacaoRequestDTO request = new SimulacaoRequestDTO(new BigDecimal("100.00"), 5);
+
+        var respostaFraudeAprovada = new AnaliseFraudeResponseDTO(StatusFraude.APROVADO, "OK", 0.1);
+        when(analiseFraudeService.verificarFraude(any(AnaliseFraudeRequestDTO.class))).thenReturn(respostaFraudeAprovada);
+
         when(produtoRepository.findProdutoElegivel(request.valorDesejado(), request.prazo())).thenReturn(Optional.empty());
 
         assertThrows(ProdutoNaoEncontradoException.class, () -> simulacaoService.criarSimulacao(request));
