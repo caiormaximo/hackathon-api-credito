@@ -29,8 +29,9 @@ public class SimulacaoController {
 
     @GetMapping
     public ResponseEntity<ListaSimulacoesResponseDTO> listarSimulacoes(
-            @RequestParam(defaultValue = "1") int pagina,
-            @RequestParam(defaultValue = "10") int qtdRegistrosPagina) {
+            // Altera os nomes dos parâmetros para o padrão e inicia a contagem em 0
+            @RequestParam(name = "page", defaultValue = "0") int pagina,
+            @RequestParam(name = "size", defaultValue = "10") int qtdRegistrosPagina) {
 
         ListaSimulacoesResponseDTO response = simulacaoService.listarSimulacoes(pagina, qtdRegistrosPagina);
         return ResponseEntity.ok(response);

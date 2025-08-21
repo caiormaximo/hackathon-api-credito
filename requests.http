@@ -44,7 +44,7 @@ Content-Type: application/json
 }
 
 ### listas simulacoes
-GET http://localhost:8080/api/simulacoes?page=0&size=10
+GET http://localhost:8080/api/simulacoes?page=1&size=10
 Accept: application/json
 
 ### volume diario

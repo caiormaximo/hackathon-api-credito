@@ -91,12 +91,18 @@ public class SimulacaoService {
 
     @Transactional(readOnly = true)
     public ListaSimulacoesResponseDTO listarSimulacoes(int pagina, int qtdRegistrosPagina) {
-        Pageable pageable = PageRequest.of(pagina - 1, qtdRegistrosPagina);
+        Pageable pageable = PageRequest.of(pagina, qtdRegistrosPagina);
         Page<Simulacao> simulacaoPage = simulacaoRepository.findAll(pageable);
+
         List<SimulacaoItemDTO> registros = simulacaoPage.getContent().stream()
                 .map(this::mapToSimulacaoItemDTO)
                 .collect(Collectors.toList());
-        return new ListaSimulacoesResponseDTO(pagina, simulacaoPage.getTotalElements(), simulacaoPage.getNumberOfElements(), registros);
+        return new ListaSimulacoesResponseDTO(
+                simulacaoPage.getNumber(), // Em vez de "pagina"
+                simulacaoPage.getTotalElements(),
+                simulacaoPage.getNumberOfElements(),
+                registros
+        );
     }
     public TelemetriaResponseDTO obterDadosTelemetria(LocalDate data) {
         return telemetriaService.obterDadosDeTelemetria(data);
