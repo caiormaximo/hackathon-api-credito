@@ -3,8 +3,8 @@ POST http://localhost:8080/api/simulacoes
 Content-Type: application/json
 
 {
-  "valorDesejado": 9000.00,
-  "prazo": 20
+  "valorDesejado": 9040.00,
+  "prazo": 22
 }
 
 ### simulacao produto  2
@@ -44,7 +44,7 @@ Content-Type: application/json
 }
 
 ### listas simulacoes
-GET http://localhost:8080/api/simulacoes?page=1&size=10
+GET http://localhost:8080/api/simulacoes?page=3&size=3
 Accept: application/json
 
 ### volume diario
